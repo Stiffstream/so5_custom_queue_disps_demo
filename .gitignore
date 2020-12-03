@@ -1,0 +1,11 @@
+cmake_build
+/.externals
+*.swp
+*.log
+/dev/target
+/dev/so_5
+/dev/__*.vim
+/dev/__*.?pp
+*.sublime-project
+*.sublime-workspace
+/dev/local-build.rb
