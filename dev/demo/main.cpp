@@ -244,7 +244,7 @@ class dynamic_per_agent_priorities_t final
       // for an agent if `d` is the final demand for that agent.
       [[nodiscard]]
       priority_t
-      handle_new_demand_priority( const so_5::execution_demand_t & d )
+      handle_new_demand_priority( const so_5::execution_demand_t & d ) noexcept
          {
             if( so_5::agent_t::get_demand_handler_on_start_ptr()
                   == d.m_demand_handler )

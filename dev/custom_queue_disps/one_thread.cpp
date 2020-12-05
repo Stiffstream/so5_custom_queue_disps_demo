@@ -127,26 +127,26 @@ class actual_disp_binder_t final : public so_5::disp_binder_t
          :  m_event_queue{ std::move(demand_queue), std::move(disp_data) }
          {}
 
-		void
-		preallocate_resources(
-			so_5::agent_t & /*agent*/ ) override
+      void
+      preallocate_resources(
+         so_5::agent_t & /*agent*/ ) override
          {}
 
-		void
-		undo_preallocation(
-			so_5::agent_t & /*agent*/ ) noexcept override
+      void
+      undo_preallocation(
+         so_5::agent_t & /*agent*/ ) noexcept override
          {}
 
-		void
-		bind(
-			so_5::agent_t & agent ) noexcept override
+      void
+      bind(
+         so_5::agent_t & agent ) noexcept override
          {
             agent.so_bind_to_dispatcher( m_event_queue );
          }
 
-		void
-		unbind(
-			so_5::agent_t & /*agent*/ ) noexcept override
+      void
+      unbind(
+         so_5::agent_t & /*agent*/ ) noexcept override
          {}
    };
 
@@ -272,14 +272,14 @@ class dispatcher_t final
 // dispatcher_handle_maker_t
 //
 class dispatcher_handle_maker_t
-	{
-	public :
-		static dispatcher_handle_t
-		make( dispatcher_shptr_t disp ) noexcept
-			{
-				return { std::move(disp) };
-			}
-	};
+   {
+   public :
+      static dispatcher_handle_t
+      make( dispatcher_shptr_t disp ) noexcept
+         {
+            return { std::move(disp) };
+         }
+   };
 
 } /* namespace impl */
 
@@ -319,7 +319,7 @@ dispatcher_handle_t::reset() noexcept
 dispatcher_handle_t
 make_dispatcher(
    // NOTE: SOEnv is not used at that moment.
-	so_5::environment_t & /*env*/ )
+   so_5::environment_t & /*env*/ )
    {
       return impl::dispatcher_handle_maker_t::make(
             std::make_shared< impl::dispatcher_t >() );

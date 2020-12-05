@@ -36,8 +36,8 @@ class dispatcher_handle_maker_t;
  * are gone.
  */
 class [[nodiscard]] dispatcher_handle_t
-	{
-		friend class impl::dispatcher_handle_maker_t;
+   {
+      friend class impl::dispatcher_handle_maker_t;
 
       impl::dispatcher_shptr_t m_disp;
 
@@ -47,8 +47,8 @@ class [[nodiscard]] dispatcher_handle_t
       bool
       empty() const noexcept;
 
-	public :
-		dispatcher_handle_t() noexcept = default;
+   public :
+      dispatcher_handle_t() noexcept = default;
 
       /*!
        * Creates and returns a binder that will use @a demand_queue
@@ -73,24 +73,24 @@ class [[nodiscard]] dispatcher_handle_t
        * But all those binders should be created by the same
        * dispatcher_handle.
        */
-		[[nodiscard]]
-		so_5::disp_binder_shptr_t
-		binder( demand_queue_shptr_t demand_queue ) const;
+      [[nodiscard]]
+      so_5::disp_binder_shptr_t
+      binder( demand_queue_shptr_t demand_queue ) const;
 
       /*!
        * Returns true if dispatcher_handler is not empty and holds
        * a reference to the dispatcher.
        */
       [[nodiscard]]
-		operator bool() const noexcept { return !empty(); }
+      operator bool() const noexcept { return !empty(); }
 
       /*!
        * Returns true if dispatcher_handler is empty and doesn't hold
        * a reference to the dispatcher.
        */
       [[nodiscard]]
-		bool
-		operator!() const noexcept { return empty(); }
+      bool
+      operator!() const noexcept { return empty(); }
 
       /*!
        * If dispatcher_handler is not empty then removes a reference
@@ -99,9 +99,9 @@ class [[nodiscard]] dispatcher_handle_t
        *
        * Does nothing is dispatcher_handler is already empty.
        */
-		void
-		reset() noexcept;
-	};
+      void
+      reset() noexcept;
+   };
 
 //
 // make_dispatcher
@@ -123,7 +123,7 @@ class [[nodiscard]] dispatcher_handle_t
 [[nodiscard]]
 dispatcher_handle_t
 make_dispatcher(
-	so_5::environment_t & env );
+   so_5::environment_t & env );
 
 } /* namespace one_thread */
 
