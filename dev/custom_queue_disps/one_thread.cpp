@@ -190,28 +190,48 @@ class dispatcher_t final
          so_5::current_thread_id_t thread_id,
          std::unique_lock< std::mutex > unique_lock ) noexcept
          {
-            auto demand = try_extract_demand_to_execute();
-            if( !demand )
+            bool continue_loop = false;
+            do
                {
-                  m_disp_data.m_wakeup_cv.wait( unique_lock );
+                  auto [demand, has_non_empty_queues] =
+                        try_extract_demand_to_execute();
+                  if( demand )
+                     {
+                        // Loop should be stopped after the execution
+                        // of the demand.
+                        continue_loop = false;
+
+                        // Demand should be executed with unblocked
+                        // dispatcher's lock.
+                        unique_lock.unlock();
+                        demand->call_handler( thread_id );
+                     }
+                  else if( has_non_empty_queues )
+                     {
+                        // Continue loop to extract the next demand.
+                        continue_loop = true;
+                     }
+                  else
+                     {
+                        // Should wait while something will be pushed
+                        // into the list, or shutdown flag will be set.
+                        m_disp_data.m_wakeup_cv.wait( unique_lock );
+                        continue_loop = false;
+                     }
                }
-            else
-               {
-                  // Demand should be executed with unblocked
-                  // dispatcher's lock.
-                  unique_lock.unlock();
-                  demand->call_handler( thread_id );
-               }
+            while( continue_loop );
          }
 
       [[nodiscard]]
-      std::optional< so_5::execution_demand_t >
+      std::tuple< std::optional< so_5::execution_demand_t >, bool >
       try_extract_demand_to_execute() noexcept
          {
             std::optional< so_5::execution_demand_t > result;
 
+            bool has_non_empty_queues{ false };
+
             if( !m_disp_data.m_head )
-               return result;
+               return { result, has_non_empty_queues };
 
             auto * dq = m_disp_data.m_head;
             m_disp_data.m_head = dq->next();
@@ -219,6 +239,8 @@ class dispatcher_t final
 
             if( !m_disp_data.m_head )
                m_disp_data.m_tail = nullptr;
+            else
+               has_non_empty_queues = true;
 
             result = dq->try_extract();
 
@@ -236,7 +258,7 @@ class dispatcher_t final
                      }
                }
 
-            return result;
+            return { result, has_non_empty_queues };
          }
 
    public:
