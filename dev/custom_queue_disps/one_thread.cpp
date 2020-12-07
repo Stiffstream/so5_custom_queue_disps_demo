@@ -173,55 +173,59 @@ class dispatcher_t final
       thread_body() noexcept
          {
             const auto thread_id = so_5::query_current_thread_id();
-            for(;;)
+            bool shutdown_initiated{ false };
+            while( !shutdown_initiated )
                {
                   std::unique_lock< std::mutex > lock{ m_disp_data.m_lock };
-                  if( m_disp_data.m_shutdown )
-                     return;
-
-                  try_extract_and_execute_one_demand(
+                  shutdown_initiated = try_extract_and_execute_one_demand(
                         thread_id,
                         std::move(lock) );
                }
          }
 
-      void
+      //! Returns the value of dispatcher_data_t::m_shutdown flag.
+      [[nodiscard]]
+      bool
       try_extract_and_execute_one_demand(
          so_5::current_thread_id_t thread_id,
          std::unique_lock< std::mutex > unique_lock ) noexcept
          {
-            bool continue_loop = false;
             do
                {
                   auto [demand, has_non_empty_queues] =
                         try_extract_demand_to_execute();
                   if( demand )
                      {
-                        // Loop should be stopped after the execution
-                        // of the demand.
-                        continue_loop = false;
-
                         // Demand should be executed with unblocked
                         // dispatcher's lock.
                         unique_lock.unlock();
                         demand->call_handler( thread_id );
+
+                        // Loop should be stopped after the execution
+                        // of the demand.
+                        break;
                      }
-                  else if( has_non_empty_queues )
-                     {
-                        // Continue loop to extract the next demand.
-                        continue_loop = true;
-                     }
-                  else
+                  else if( !has_non_empty_queues )
                      {
                         // Should wait while something will be pushed
                         // into the list, or shutdown flag will be set.
                         m_disp_data.m_wakeup_cv.wait( unique_lock );
-                        continue_loop = false;
                      }
                }
-            while( continue_loop );
+            while( !m_disp_data.m_shutdown );
+
+            return m_disp_data.m_shutdown;
          }
 
+      /*!
+       * Return a tuple with two values:
+       *
+       * - the first is the result of demand_queue_t::try_extract() method
+       *   called for a non-empty demand-queue;
+       * - the second is the boolean flag that is set to `true` if there are
+       *   at least one non-empty demand-queue. If this flag is `false` then
+       *   there is no non-empty demand-queues at all.
+       */
       [[nodiscard]]
       std::tuple< std::optional< so_5::execution_demand_t >, bool >
       try_extract_demand_to_execute() noexcept
